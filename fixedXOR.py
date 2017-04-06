@@ -1,5 +1,3 @@
-import base64
-import binascii
 
 hex_one = input('Enter the first buffer to xor.')
 hex_two = input('Enter the second buffer to xor.')

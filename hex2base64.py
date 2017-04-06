@@ -1,4 +1,3 @@
-import base64
 import binascii
 
 hexstring = input('Enter the hex number to base64 encode.')
