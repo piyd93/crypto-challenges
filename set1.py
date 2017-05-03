@@ -1,6 +1,9 @@
 import binascii
 
 
+def xorbytes(a,b):
+  return bytes(x^y for x,y in zip(a,b))
+
 def hex_to_text(hexstring):
   return ''.join(chr(int(hexstring[i:i+2], 16)) for i in range(0, len(hexstring), 2))
 
@@ -8,12 +11,8 @@ def hextobase64(hexstring):
   binarystring = binascii.unhexlify(hexstring)
   return binascii.b2a_base64(binarystring)
 
-
-def fixedXOR(hex_one, hex_two):
+def hexXOR(hex_one, hex_two):
   return hex(hex_one ^ hex_two)
-
-#def single_byte_XOR(message, key):
-
 
 alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 english_order = 'ETAOINSHRDLCUMWFGYPBVKJXQZ'
@@ -55,16 +54,16 @@ def get_match_score(message):
 
   return matches
 
-
-def crack_single_byte_xor(message):
+def crack_single_byte_xor(hex_message):
   key = ''
   decrypted = ''
   current_max_match = 0
-  hex_message = int(message, 16)
+  bytes_message = bytes.fromhex(hex_message)
   for letter in alphabet:
-    letter_string = letter*(len(message)+1//2)
-    xored = fixedXOR(hex_message, int(''.join(str(ord(i)) for i in letter_string)))
-    test_message = hex_to_text(xored[2:])
+    letter_string = hex(ord(letter))[2:]*(len(hex_message)+1//2)
+    bytes_letter_string = bytes.fromhex(letter_string)
+    xored = xorbytes(bytes_letter_string, bytes_message)
+    test_message = xored.decode()
     print(test_message)
     if get_match_score(test_message) > current_max_match:
       key = letter
@@ -73,24 +72,32 @@ def crack_single_byte_xor(message):
   print('key = ' + letter)
   return decrypted
 
+def repeating_key_xor(message, key):
+  bytes_message = message.encode()
+  key_string = key*(len(message))
+  bytes_key_string = key_string.encode()
+  xored = xorbytes(bytes_message, bytes_key_string)
+  return xored
+
+# challenge5
+# message = input('enter message to encrypt using repeating key xor: ')
+# key = input('enter key for repeating key xor: ')
+# encrypted = repeating_key_xor(message, key)
+# print(encrypted)
+# print(encrypted.hex())
 
 # challenge3
-message = input('enter string to decode (single-byte xor cipher): ')
-print(crack_single_byte_xor(message))
-
-
-# message = hex_to_text(message)
-# print(get_match_score(hex_to_text(message)))
-
-
-# challenge 1
-# hexstring = input('Enter the hex number to base64 encode.')
-# print(hextobase64(hexstring))
+# message = input('enter string to decode (single-byte xor cipher): ')
+# print(crack_single_byte_xor(message))
 
 # challenge2
 # one = input('Enter the first buffer to xor.')
 # two = input('Enter the second buffer to xor.')
-# print(fixedXOR(int(one, 16), int(two, 16)))
+# print(hexXOR(int(one, 16), int(two, 16)))
+
+# challenge 1
+# hexstring = input('Enter the hex number to base64 encode.')
+# print(hextobase64(hexstring))
 
 
 
