@@ -54,6 +54,7 @@ def get_match_score(message):
 
   return matches
 
+
 def crack_single_byte_xor(hex_message):
   key = ''
   decrypted = ''
