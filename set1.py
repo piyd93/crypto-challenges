@@ -81,11 +81,11 @@ def repeating_key_xor(message, key):
   return xored
 
 # challenge5
-# message = input('enter message to encrypt using repeating key xor: ')
-# key = input('enter key for repeating key xor: ')
-# encrypted = repeating_key_xor(message, key)
-# print(encrypted)
-# print(encrypted.hex())
+message = input('enter message to encrypt using repeating key xor: ')
+key = input('enter key for repeating key xor: ')
+encrypted = repeating_key_xor(message, key)
+print(encrypted)
+print(encrypted.hex())
 
 # challenge3
 # message = input('enter string to decode (single-byte xor cipher): ')
