@@ -38,6 +38,7 @@ def get_match_score(message):
 
   return matches
 
+# didn't finish this yet
 def frequency_analysis_substitution_cipher(message):
   current_max_match = 0
   decrypted = ''

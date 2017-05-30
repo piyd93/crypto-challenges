@@ -1,5 +1,6 @@
 import binascii
-
+import itertools
+import math
 
 def xorbytes(a,b):
   return bytes(x^y for x,y in zip(a,b))
@@ -10,6 +11,9 @@ def hex_to_text(hexstring):
 def hextobase64(hexstring):
   binarystring = binascii.unhexlify(hexstring)
   return binascii.b2a_base64(binarystring)
+
+def base64tobytes(base64str):
+  return binascii.a2b_base64(base64str)
 
 def hexXOR(hex_one, hex_two):
   return hex(hex_one ^ hex_two)
@@ -73,6 +77,23 @@ def crack_single_byte_xor(hex_message):
   print('key = ' + letter)
   return decrypted
 
+def crack_single_byte_xor_bytes(bytes_message):
+  key = ''
+  decrypted = ''
+  current_max_match = 0
+  for letter in alphabet:
+    letter_string = hex(ord(letter))[2:]*(len(bytes_message)+1//2)
+    bytes_letter_string = bytes.fromhex(letter_string)
+    xored = xorbytes(bytes_letter_string, bytes_message)
+    test_message = xored.decode()
+    # print(test_message)
+    if get_match_score(test_message) > current_max_match:
+      key = letter
+      decrypted = test_message
+      current_max_match = get_match_score(test_message)
+  print('key = ' + letter)
+  return decrypted
+
 def repeating_key_xor(message, key):
   bytes_message = message.encode()
   key_string = key*(len(message))
@@ -80,12 +101,55 @@ def repeating_key_xor(message, key):
   xored = xorbytes(bytes_message, bytes_key_string)
   return xored
 
+def repeating_key_xor_bytes(bytes_message, key):
+  key_string = key*(len(bytes_message))
+  bytes_key_string = key_string.encode()
+  xored = xorbytes(bytes_message, bytes_key_string)
+  return xored
+
+def compute_num_differing_bits(str1, str2):
+  assert len(str1) == len(str2)
+  return sum([bin(str1[i] ^ str2[i]).count('1') for i in range(len(str1))])
+
+def crack_repeating_key_xor(message):
+  KEYSIZE = 2
+  min_edit_distance = math.inf
+  for size in range(2, 40):
+    first = message[0:size-1]
+    second = message[size:((size*2)-1)]
+    normalized = compute_num_differing_bits(first,second)/size
+    if normalized < min_edit_distance:
+      min_edit_distance = normalized
+      KEYSIZE = size
+  # break ciphertext into blocks of KEYSIZE length
+  blocks = [message[i:i+KEYSIZE] for i in range(0, len(message), KEYSIZE)]
+  # transpose blocks
+  transposedBlocks = list(itertools.zip_longest(*blocks, fillvalue=0))
+  # solve each block
+  key = [crack_single_byte_xor_bytes(bytes(message))[0] for x in transposedBlocks]
+  # put together the solutions to each block to get the key
+  return key[0]
+
+# challenge6
+bfile = base64tobytes(open('6.txt', 'r').read())
+key = crack_repeating_key_xor(bfile)
+print(key)
+y = repeating_key_xor_bytes(bfile, key)
+print(key, y)
+
+# test hamming distance :)
+# str1 = input("enter str1").encode('utf-8')
+# str2 = input("enter str2").encode('utf-8')
+# print(str1)
+# print(str2)
+# print(compute_num_differing_bits(str1, str2))
+
 # challenge5
-message = input('enter message to encrypt using repeating key xor: ')
-key = input('enter key for repeating key xor: ')
-encrypted = repeating_key_xor(message, key)
-print(encrypted)
-print(encrypted.hex())
+# message = input("enter message to encrypt using repeating key xor: ")
+# key = input("enter key for repeating key xor: ")
+# encrypted = repeating_key_xor(message, key)
+# print(encrypted)
+# print(encrypted.hex())
 
 # challenge3
 # message = input('enter string to decode (single-byte xor cipher): ')
